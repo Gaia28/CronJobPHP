@@ -5,9 +5,9 @@ $dotenv->load();
 
 class sendEmail
 {
-
 public function getAPI(){
-$curl = curl_init();
+try{
+    $curl = curl_init();
 
 curl_setopt_array($curl, [
 CURLOPT_URL => "https://liturgia.up.railway.app/v2/",
@@ -24,19 +24,18 @@ CURLOPT_HTTPHEADER => [
 ]);
 
 $response = curl_exec($curl);
-$err = curl_error($curl);
 
 curl_close($curl);
 
-if ($err) {
-echo "cURL Error #:" . $err;
-} else {
-echo $response;
+return $response;
+}catch(Exception $e){
+echo "Erro ao obter dados da API: " . $e->getMessage();
 }
 }
 
-public function SendEmail(){
+public function SendEmail($apiResponse){
 $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+$data = json_decode($apiResponse, true);
 try{
 
 $mailer = $_ENV['MAIL_MAILER'];
@@ -59,11 +58,16 @@ $mail->setFrom($fromAddress, $fromName);
 $mail->addAddress('matheusgaia33@gmail.com','Matheus Gaia');
 
 $mail->isHTML(true);
-$mail->Subject = 'Testando o envio de email';
-$mail->Body = 'Olá, este é um email de teste enviado usando PHPMailer!';
+$mail->Subject = 'Liturgia do dia ' . date('d/m/Y');
+$salmo = $data['leituras']['salmo'][0] ?? [];
+$referencia = htmlspecialchars($salmo['referencia'] ?? 'Sem referencia', ENT_QUOTES, 'UTF-8');
+$refrao = htmlspecialchars($salmo['refrao'] ?? 'Sem refrao', ENT_QUOTES, 'UTF-8');
+$textoSalmo = nl2br(htmlspecialchars($salmo['texto'] ?? 'Salmo nao encontrado', ENT_QUOTES, 'UTF-8'));
 
+$mail->Body = "<h2>Salmo do dia</h2><p><strong>{$referencia}</strong></p><p><em>{$refrao}</em></p><p>{$textoSalmo}</p>";
 $mail->send();
 echo 'Email enviado com sucesso!';
+
 }catch (Exception $e){
 echo "Erro ao enviar email: {$mail->ErrorInfo}";
 }
@@ -71,5 +75,5 @@ echo "Erro ao enviar email: {$mail->ErrorInfo}";
 }
 
 $sendEmail = new sendEmail();
-$sendEmail->getAPI();
-$sendEmail->SendEmail();
+$apiResponse = $sendEmail->getAPI();
+$sendEmail->SendEmail($apiResponse);
