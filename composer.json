@@ -1,0 +1,18 @@
+{
+    "name": "gaia/cron-job-php",
+    "autoload": {
+        "psr-4": {
+            "Gaia\\CronJobPhp\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gaia28",
+            "email": "matheusgaia33@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "^7.0"
+    }
+}
